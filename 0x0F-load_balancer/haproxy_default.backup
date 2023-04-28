@@ -1,0 +1,23 @@
+
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+defaults
+  mode http
+  timeout client 15s
+  timeout connect 10s
+  timeout server 15s
+  timeout http-request 10s
+frontend rexatrom-tech-frontend
+    bind *:80
+    default_backend rexatrom-tech-backend
+backend rexatrom-tech-backend
+    balance roundrobin
+    server 185716-web-01 100.25.152.225:80 check
+    server 185716-web-02 3.85.196.122:80 check
+
