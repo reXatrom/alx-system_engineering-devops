@@ -33,21 +33,21 @@ defaults
         errorfile 503 /etc/haproxy/errors/503.http
         errorfile 504 /etc/haproxy/errors/504.http
 
-frontend rexatrom-frontend
+frontend www-http
         bind *:80
-        mode http
-	bind *:443 ssl crt /etc/haproxy/certs/www.rexatrom.tech.pem
+        #mode http
+	reqadd X-Forwarded-Proto:\ http
+	redirect scheme https code 301 if !{ ssl_fc }
 	redirect scheme https if !{ ssl_fc }
+        default_backend rexatrom-backend
+
+frontend www-https
+        bind *:443 ssl crt /etc/haproxy/ssl/www.rexatrom.tech.pem
+        reqadd X-Forwarded-Proto:\ https
         default_backend rexatrom-backend
 	
 backend rexatrom-backend
         balance roundrobin
+	redirect scheme https if !{ ssl_fc }
         server 185716-web-01 100.25.152.225:80 check
         server 185716-web-02 3.85.196.122:80 check
-
-listen http-in
-        bind :80
-        balance roundrobin
-	server 185716-web-01 100.25.152.225:80 check
-        server 185716-web-02 3.85.196.122:80 check
-
