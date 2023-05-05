@@ -2,17 +2,23 @@
 # Usage: ./0-world_wide_web <domain> <subdomain>
 # Bash script that will display information about subdomains.
 
-get_string () {
-    str=$(dig $1 | grep -A1 "ANSWER SECTION:" | tail -n 1)
+getData() {
+	host="$1.$2"
+	info=$(dig "$host" | grep -A1 'ANSWER SECTION:' | tail -1 | tr '\t' ' ')
+	ip=$(echo "$info" | cut -d' ' -f5-)
+	re=$(echo "$info" | cut -d' ' -f4)
+	echo "$1 $re $ip" | awk '{print "The subdomain "$1" is a "$2" record and points to "$3}'	
 }
 
-if [ $# -eq 1 ]; then
-    list="www lb-01 web-01 web-02"
-    for subdomain in $list; do
-	get_string "$subdomain.$1"
-	echo "$str $subdomain" | awk '{ print "The subdomain " $6 " is a " $4 " record and points to " $5 }'
-    done
-else
-    get_string "$2.$1"
-    echo "$str $2" | awk '{ print "The subdomain " $6 " is a " $4 " record and points to " $5 }'
+if (($# == 1))
+then
+	getData "www" "$1"
+	getData "lb-01" "$1"
+	getData "web-01" "$1"
+	getData "web-02" "$1"
+fi
+
+if (($# == 2))
+then
+	getData "$2" "$1"
 fi
